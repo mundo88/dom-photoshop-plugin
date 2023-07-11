@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="./dist/output.css" />
+  </head>
+  <body class="h-screen flex flex-col">
+    <div class="flex flex-col py-2 max-h-max">
+      <nav class="space-x-4 mx-4 border-b-2 items-center flex flex-row  border-[#3e3e3e] ">
+        <div  class="selected sp-tab cursor-pointer [&.selected]:border-b-2 [&.selected]:border-white/75 [&.selected]:-mb-[2px]" id="vector">
+            <sp-label class="text-xs font-medium text-white/75">Hình minh họa</sp-label>
+        </div> 
+        <div  class="sp-tab cursor-pointer [&.selected]:border-b-2 [&.selected]:border-white/75 [&.selected]:-mb-[2px]" id="background">
+          <sp-label class="text-xs font-medium text-white/75">Hình nền</sp-label>
+        </div>
+        <div  class="sp-tab cursor-pointer [&.selected]:border-b-2 [&.selected]:border-white/75 [&.selected]:-mb-[2px]" id="file">
+          <sp-label class="text-xs font-medium text-white/75">Chia sẻ file</sp-label>
+        </div>
+      </nav>
+      <div class=" overflow-y-auto flex-1 mt-2" data-tabs-id="vector" >
+        <div  class="flex flex-col space-y-2 px-4 pt-2" data-categories>
+          <a class="w-full h-12 bg-[url('https://fastly.picsum.photos/id/435/536/354.jpg?hmac=6o-v-ozgSiDJI4FF80Ih6vXGk5swRrF_DKKEnp08354')] bg-center rounded-md overflow-hidden" data-category="all"> 
+            <div class="w-full h-full bg-black/70 hover:bg-black/80 flex items-center justify-center">
+              <span class="text-xl text-white">Tất cả</span>
+            </div>
+          </a>
+        </div>
+        <div style="display: none;" data-vectors>
+          <div class="px-4 py-2">
+            <a class=" flex items-center w-fit pl-1 pr-1.5 py-1 space-x-1 text-white/75 back-folder border rounded border-gray-300">
+              <img src="/icons/left-26.png" alt="" class="w-4 h-4">
+             <span class="text-md text-medium">Quay lại</span>
+            </a>
+          </div>
+          <div class=" flex flex-wrap px-2 pb-2" data-panel="vector" >
+          </div>
+        </div>
+      </div>
+      <div style="display: none;" class="overflow-y-auto flex-1 mt-2" data-tabs-id="background">
+        <div class="flex flex-wrap px-2 py-2" data-panel="background"></div>
+      </div>
+      <div style="display: none;" class="overflow-y-auto flex-1 mt-2" data-tabs-id="file">
+        <div class="px-4 py-2 flex space-x-2 items-end">
+          <div class="w-full">
+            <sp-textfield id="file_name" class="w-full h-full" pattern="[P][o][s][i][t][i][v][e]" placeholder="Nhập tên file..."> 
+          </div>
+          <button id="shareFile" class="rounded-md bg-[#1473e6] text-white/75 p-0.5 h-full hover:bg-[#0d66d0] whitece-nowrap flex items-center justify-center">Chọn file</button>
+        </div>
+        <div class="flex flex-wrap px-2 py-2" data-panel="file">
+            <!-- <div class="px-2 py-2 w-1/2 h-auto">
+                <a data-file="test.psd"  class="flex items-center justify-center hover:bg-[#282828] bg-[#424242] duration-200 w-full h-full p-6 rounded-xl cursor-pointer">
+                    <img src="/icons/ps-64.png" alt="">
+                </a>
+            </div> -->
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+    <script src="jquery.min.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
