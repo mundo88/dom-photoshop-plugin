@@ -6,8 +6,12 @@ const {executeAsModal} = require("photoshop").core;
 const {batchPlay} = require("photoshop").action;
 const formats = require('uxp').storage.formats
 const socket_url = "https://share-psd-server-f0702320bf16.herokuapp.com"
-// const socket_url = "http://127.0.0.1:8080"
+// const socket_url = "http://127.0.0.1:8080/"
 const root_url = "https://www.dom2.shop"
+showFile()
+showFolder()
+showVector()
+showBackground()
 
 var socket = io(socket_url);
 socket.on('connect', function() {
@@ -15,21 +19,57 @@ socket.on('connect', function() {
 });
 socket.on('message', function(data) {
 	console.log(data);
-	$("[data-panel='file']").prepend(`
-	  <div class="px-2 py-2 w-1/2 h-auto" data-file="${data.url}">
-		<div class="flex items-center flex-col space-y-2 justify-center hover:bg-[#282828] bg-[#424242] duration-200 w-full h-full p-6 rounded-xl cursor-pointer">
-			<img src="/icons/ps-64.png" alt="">
-			<sp-label class="text-md text-medium text-white ">${data.fileName}</sp-label>
-		</div>
-	  </div>
-	`)
+	data.attr = {
+		"data-file": data.url,
+		"data-id": data.fileName,
+	}
+	
+	$("[data-panel='file']").prepend(fileCard(data))
 	$("#file_name").val(data.fileName)
 });
 
-showFolder()
-showVector()
-showBackground()
 
+
+
+
+async function showFile() {
+	let response = await fetch(socket_url+"/psd");
+	console.log(response);
+	if (!response.ok) {
+		throw new Error(`HTTP error fetching forecast; status: ${response.status}`);
+	}
+	let dataJson = await response.json();
+	$("[data-panel='file']").html("")
+	$(dataJson.data).each((index,data) => {
+		console.log(data);
+		$("[data-panel='file']").prepend(fileCard(data))
+	})
+	return dataJson;
+}
+const fileCard =(data={})=>{
+	try {
+		const elm = $(`
+		<div class="w-1/2 p-2 h-auto " data-file="${data.url}">
+		  <div class="flex relative items-center overflow-hidden rounded-xl flex-col justify-between hover:bg-[#282828] bg-[#424242] duration-200 w-full h-full  cursor-pointer">
+		  	<div style="display:none" class="loading w-full h-full absolute top-0 left-0 z-10 rounded-xl flex items-center justify-center p-4 bg-[#282828]/70">
+				<span class="text-sm text-white/75 font-medium" >Đang tải...</span>
+			  <img class="w-8 h-auto" src="/icons/loading.gif" alt="">
+	  		</div>
+			  <div class="w-full aspect-square h-full relative bg-[#282828]">
+			  	<img class="w-full h-full object-contain hover:scale-110" src="${data.thumbnail}" alt="">
+			  </div>
+			  <div class="p-3 flex space-x-2 items-center">
+			  	<img class="w-8 h-auto" src="/icons/ps-64.png" alt="">
+			  	<sp-label class="text-md text-medium text-white ">${data.fileName}</sp-label>
+			  </div>
+		  </div>
+		</div>
+	  `)
+	  return elm
+	} catch (error) {
+		return `<div class="pointer-events-none px-2 py-2 w-1/2">${error.message}</div>`
+	}	
+}
 const listener = (e,d) => {
 	console.log(e);
 	if((e=="select" && d._target[0]._ref =="document" )|| e=="save" || e=="open" || e=="close" ||e=="make" && d.new._obj =="document" ) {
@@ -107,7 +147,6 @@ async function imgToLayer(imgUrl, image_name = 'dom_output_image.svg') {
 
     // return place_event_result
 }
-
 async function readFile(fileUrl,batchCommand,file_name){
     try {
 		const data = await fetch(fileUrl)
@@ -139,8 +178,6 @@ async function readFile(fileUrl,batchCommand,file_name){
         console.warn(e)
     }
 }
-
-
 async function promptFile() {
 	const r1 = await prompt(
 		'Mở file',
@@ -149,7 +186,6 @@ async function promptFile() {
 	)
 	return r1
 }
-
 async function addFileCommand({prompt,token}) {
 	let batchCommand;
 	switch (prompt) {
@@ -214,7 +250,6 @@ async function getDataFile(token) {
 	}
 
 }
-
 async function downloadFile(fileUrl) {
 	try {
 		const data = await fetch(fileUrl)
@@ -227,111 +262,28 @@ async function downloadFile(fileUrl) {
         const file = await folder.createFile(file_name, { overwrite: true })
         await file.write(file_download, { format: storage.formats.binary })
         const token = await fs.createSessionToken(file)
+		$('.loading').hide()
 		return  token
     } catch (e) {
         console.warn(e)
     }
 }
-
-// async function downloadFile(fileUrl) {
-// 	let batchCommand;
-// 	let file_name = null;
-// 	const r1 = await prompt(
-// 		'Mở file',
-// 		'Mở file bằng cách tạo layer hoặc mở trong cửa sổ mới?',
-// 		['Thoát', 'Tạo layer','Cửa sổ mới']
-// 	)
-// 	if ((r1 || 'Tạo layer') == 'Tạo layer') {
-// 		batchCommand ={
-// 			_obj: 'placeEvent',
-// 			null: {
-// 				_path: "",
-// 				_kind: 'local',
-// 			},
-// 			freeTransformCenterState: {
-// 				_enum: 'quadCenterState',
-// 				_value: 'QCSAverage',
-// 			},
-// 			offset: {
-// 				_obj: 'offset',
-// 				horizontal: {
-// 					_unit: 'pixelsUnit',
-// 					_value: 0,
-// 				},
-// 				vertical: {
-// 					_unit: 'pixelsUnit',
-// 					_value: 0,
-// 				},
-// 			},
-// 			_isCommand: true,
-// 			_options: {
-// 				dialogOptions: 'dontDisplay',
-// 			},
-// 		}
-// 	} else if ((r1 || 'Cửa sổ mới') == 'Cửa sổ mới'){
-// 		batchCommand = {
-// 			"_obj": "open",
-// 			"dontRecord": false,
-// 			"forceNotify": true,
-// 			"null": {
-// 			   "_path": "",
-// 			   "_kind": "local"
-// 			},
-// 			"_isCommand": true
-// 		}
-// 	}else {
-// 		console.log('Thoát')
-// 		return
-// 	}
-// 	return await readFile(fileUrl,batchCommand,file_name)
-
-//     // return place_event_result
-// }
-// async function saveFile(token){
-// 	return await executeAsModal( async ()=>{
-// 		const result = await batchPlay(
-// 				[
-// 					{
-// 						_obj: "save",
-// 						as: {
-// 							_obj: "photoshop35Format",
-// 							maximizeCompatibility: true
-// 						},
-// 						in: {
-// 							_path: token,
-// 							_kind: "local"
-// 						},
-// 						documentID: 235,
-// 						lowerCase: true,
-// 						saveStage: {
-// 							_enum: "saveStageType",
-// 							_value: "saveSucceeded"
-// 						},
-// 						_options: {
-// 							dialogOptions: "dontDisplay"
-// 						}
-// 					}
-// 				],
-// 				{
-// 					synchronousExecution: true,
-// 					modalBehavior: 'execute',
-// 				}
-// 			);
-// 		}, {}
-// 	);
-// }
 async function shareFile() {
 	try {
+	
 		const storage = await require('uxp').storage
 		const fs = await storage.localFileSystem
 	
 		let entry = await fs.getFileForOpening({path:app.activeDocument.path});
 		let token = fs.createSessionToken(entry);
-		let file_name = entry.name
 		let native_path = entry.path
-		$("#file_name").val(file_name)
+		$("#file_name").val(entry.name)
 		const formData = new window.FormData()
 		formData.append("file",entry)
+		$("#shareFile").html("Đang tải..")
+		$("#shareFile").attr({
+			style:"background-color: #7dace6"
+		})
 		const res = await fetch(socket_url+"/psd",{
 			method: 'POST',
 			body: formData
@@ -339,11 +291,13 @@ async function shareFile() {
 		console.log(formData);
 		const data = await res.json()
 		console.log(data);
+		$("#shareFile").removeAttr("style")
+		$("#shareFile").html("Chọn file")
+
 	} catch (error) {
 		console.warn(error);
 	}
 }
-
 async function showVector() {
 	const data = await getImgageData(type="vector")
 	for(let i = 0; i < data.vectors.length; i++) {
@@ -415,7 +369,6 @@ async function getImgageData(type="vector") {
 	let dataJson = await response.json();
 	return dataJson;
 }
-// show a simple alert:
 function showAlert(message) {
 	const core = require('photoshop').app;
 	core.showAlert(message);
@@ -481,7 +434,6 @@ $(document).on('click', '.sp-tab',function(e) {
 	$("[data-tabs-id]").hide()
 	$(`[data-tabs-id="${$(this).attr('id')}"]`).show()
 })
-
 $(document).on('click', '[data-category]' , function(e) {
 	const folder = $(this).attr('data-category')
 	$('[data-tabs-id="vector"]>[data-categories]').hide()
@@ -505,11 +457,13 @@ $(document).on('click', '[data-file]' ,async function(e) {
 			const token = $(this).attr('data-token')
 			await getDataFile(token)
 		}else {
+			$(this).find('.loading').show()
 			const token = await downloadFile(fileUrl=$(this).attr('data-file'))
-			await getDataFile(token)
-			console.log(token);
 			$(this).attr('data-token', token)
+			await getDataFile(token)
+
 		}
+
 	} catch (error) {
 		showAlert(error)
 	}

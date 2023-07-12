@@ -39,18 +39,17 @@
         <div class="flex flex-wrap px-2 py-2" data-panel="background"></div>
       </div>
       <div style="display: none;" class="overflow-y-auto flex-1 mt-2" data-tabs-id="file">
-        <div class="px-4 py-2 flex space-x-2 items-end">
+        <div class="px-4 py-2 flex space-x-2 items-center">
           <div class="w-full">
             <sp-textfield id="file_name" class="w-full h-full" pattern="[P][o][s][i][t][i][v][e]" placeholder="Nhập tên file..."> 
           </div>
           <button id="shareFile" class="rounded-md bg-[#1473e6] text-white/75 p-0.5 h-full hover:bg-[#0d66d0] whitece-nowrap flex items-center justify-center">Chọn file</button>
+          <div id="reload-plugin" onclick="showFile()" class="rounded-md flex items-center justify-center bg-[#333] p-2 hover:bg-[#111] cursor-pointer" >
+            <img src="/icons/reload-24.png" alt="" class="w-4 h-4">
+          </div>
         </div>
-        <div class="flex flex-wrap px-2 py-2" data-panel="file">
-            <!-- <div class="px-2 py-2 w-1/2 h-auto">
-                <a data-file="test.psd"  class="flex items-center justify-center hover:bg-[#282828] bg-[#424242] duration-200 w-full h-full p-6 rounded-xl cursor-pointer">
-                    <img src="/icons/ps-64.png" alt="">
-                </a>
-            </div> -->
+        <div class="flex flex-wrap gap-2 px-2 py-2" data-panel="file">
+            
         </div>
       </div>
     </div>
