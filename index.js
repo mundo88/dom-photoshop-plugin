@@ -465,7 +465,7 @@ $(document).on('click', '[data-file]' ,async function(e) {
 		}
 
 	} catch (error) {
-		showAlert(error)
+		console.log(error)
 	}
 })
 $(document).on('click', '#shareFile' ,shareFile)
