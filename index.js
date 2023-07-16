@@ -5,8 +5,8 @@ const app = require('photoshop').app
 const {executeAsModal} = require("photoshop").core;
 const {batchPlay} = require("photoshop").action;
 const formats = require('uxp').storage.formats
-// const socket_url = "https://share-psd-server-f0702320bf16.herokuapp.com"
-const socket_url = "http://127.0.0.1:8080/"
+const socket_url = "https://share-psd-server-f0702320bf16.herokuapp.com"
+// const socket_url = "http://127.0.0.1:8080/"
 const root_url = "https://www.dom2.shop"
 const listener = (e,d) => {
 	console.log(e);
