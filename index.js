@@ -5,14 +5,24 @@ const app = require('photoshop').app
 const {executeAsModal} = require("photoshop").core;
 const {batchPlay} = require("photoshop").action;
 const formats = require('uxp').storage.formats
-const socket_url = "https://share-psd-server-f0702320bf16.herokuapp.com"
-// const socket_url = "http://127.0.0.1:8080/"
+// const socket_url = "https://share-psd-server-f0702320bf16.herokuapp.com"
+const socket_url = "http://127.0.0.1:8080/"
 const root_url = "https://www.dom2.shop"
+const listener = (e,d) => {
+	console.log(e);
+	if((e=="select" && d._target[0]._ref =="document" )|| e=="save" || e=="open" || e=="close" ||e=="make" && d.new._obj =="document" ) {
+		const docummentName =  app.activeDocument.name
+		$("#file_name").val(docummentName)
+		
+		console.log(e,d);
+	}
+}
+require('photoshop').action.addNotificationListener(["save","open","select","close","make"],listener);
+
 showFile()
 showFolder()
 showVector()
 showBackground()
-
 var socket = io(socket_url);
 socket.on('connect', function() {
 	socket.emit('message', {data: 'I\'m connected!'});
@@ -23,14 +33,9 @@ socket.on('message', function(data) {
 		"data-file": data.url,
 		"data-id": data.fileName,
 	}
-	
 	$("[data-panel='file']").prepend(fileCard(data))
 	$("#file_name").val(data.fileName)
 });
-
-
-
-
 
 async function showFile() {
 	let response = await fetch(socket_url+"/psd");
@@ -49,7 +54,7 @@ async function showFile() {
 const fileCard =(data={})=>{
 	try {
 		const elm = $(`
-		<div class="w-1/2 p-2 h-auto " data-file="${data.url}">
+		<div class="w-1/2 p-2 h-auto " data-file="${data.url}" data-file-name="${data.fileName}">
 		  <div class="flex relative items-center overflow-hidden rounded-xl flex-col justify-between hover:bg-[#282828] bg-[#424242] duration-200 w-full h-full  cursor-pointer">
 		  	<div style="display:none" class="loading w-full h-full absolute top-0 left-0 z-10 rounded-xl flex items-center justify-center p-4 bg-[#282828]/70">
 				<span class="text-sm text-white/75 font-medium" >Đang tải...</span>
@@ -70,23 +75,14 @@ const fileCard =(data={})=>{
 		return `<div class="pointer-events-none px-2 py-2 w-1/2">${error.message}</div>`
 	}	
 }
-const listener = (e,d) => {
-	console.log(e);
-	if((e=="select" && d._target[0]._ref =="document" )|| e=="save" || e=="open" || e=="close" ||e=="make" && d.new._obj =="document" ) {
-		const docummentName =  app.activeDocument.name
-		$("#file_name").val(docummentName)
-		
-		console.log(e,d);
-	}
-}
-require('photoshop').action.addNotificationListener(["save","open","select","close","make"],listener);
+
 const imgUrlToBuffer= async (imgUrl) => {
 	const data = await fetch(imgUrl)
 	const blod = await data.blob();
 	const buffer = await blod.arrayBuffer()
 	return buffer
 }
-async function imgToLayer(imgUrl, image_name = 'dom_output_image.svg') {
+async function imgToLayer(imgUrl, image_name='dom_vector.svg') {
 	const img = await imgUrlToBuffer(imgUrl)
     try {
         const img_name = image_name
@@ -250,6 +246,19 @@ async function getDataFile(token) {
 	}
 
 }
+async function getFileToken(fileName) {
+	try {
+		const storage 	= await require('uxp').storage
+		const fs = storage.localFileSystem
+		const folder = await fs.getTemporaryFolder()
+		const file = await folder.getEntry(fileName)
+		const token = await fs.createSessionToken(file)
+		$('.loading').hide()
+		return token
+	} catch (error) {
+		return false
+	}
+}
 async function downloadFile(fileUrl) {
 	try {
 		const data = await fetch(fileUrl)
@@ -387,11 +396,11 @@ async function prompt(
         'sp-divider',
         'sp-body',
         'footer',
-    ].map((tag) => document.createElement(tag))
-    ;[headingEl, dividerEl, bodyEl, footerEl].forEach((el) => {
+    ].map((tag) => document.createElement(tag));
+	[headingEl, dividerEl, bodyEl, footerEl].forEach((el) => {
         el.style.margin = '6px'
         el.style.width = 'calc(100% - 12px)'
-    })
+    });
 
     formEl.setAttribute('method', 'dialog')
     formEl.addEventListener('submit', () => dlgEl.close())
@@ -458,12 +467,10 @@ $(document).on('click', '[data-file]' ,async function(e) {
 			await getDataFile(token)
 		}else {
 			$(this).find('.loading').show()
-			const token = await downloadFile(fileUrl=$(this).attr('data-file'))
+			const token = await getFileToken(fileName=$(this).attr('data-file-name')) || await downloadFile(fileUrl=$(this).attr('data-file'))
 			$(this).attr('data-token', token)
 			await getDataFile(token)
-
 		}
-
 	} catch (error) {
 		console.log(error)
 	}
